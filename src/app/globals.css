@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* --- BASE COLORS & SURFACE --- */
+  --color-background: #ffffff;
+  --color-foreground: #09090b; /* Zinc 950 */
+  --color-card: #ffffff;
+  --color-card-foreground: #09090b;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #09090b;
+
+  /* --- BRANDING (Modern Charity/Tech) --- */
+  --color-primary: #6366f1; /* Indigo 500 (Trust & Tech) */
+  --color-primary-foreground: #fafafa;
+  --color-secondary: #f43f5e; /* Rose 500 (Charity/Emotion) */
+  --color-secondary-foreground: #fafafa;
+
+  /* --- UI ELEMENTS (Inputs, Borders, Muted) --- */
+  --color-muted: #f4f4f5; /* Zinc 100 */
+  --color-muted-foreground: #71717a; /* Zinc 500 */
+  --color-accent: #f4f4f5;
+  --color-accent-foreground: #18181b;
+  --color-border: #e4e4e7; /* Zinc 200 */
+  --color-input: #e4e4e7;
+  --color-ring: #6366f1;
+
+  /* --- STATE COLORS (Cart, Errors, Success) --- */
+  --color-destructive: #ef4444; /* Red 500 */
+  --color-destructive-foreground: #fafafa;
+  --color-success: #10b981; /* Emerald 500 */
+  --color-warning: #f59e0b; /* Amber 500 */
+  --color-info: #0ea5e9; /* Sky 500 */
+
+  /* --- RADIUS & SHADOWS --- */
+  --radius-lg: 0.75rem;
+  --radius-md: 0.5rem;
+  --radius-sm: 0.25rem;
+}
+  /* --- DARK THEME OVERRIDES --- */
+.dark {
+  --color-background: #020617; 
+  --color-foreground: #f8fafc;
+  --color-card: #0f172a;
+  --color-card-foreground: #f8fafc;
+  --color-popover: #020617;
+  --color-popover-foreground: #f8fafc;
+  --color-primary: #818cf8;
+  --color-muted: #1e293b;
+  --color-muted-foreground: #94a3b8;
+  --color-accent: #1e293b;
+  --color-border: #1e293b;
+  --color-input: #1e293b;
+}
+
+/* --- BASE STYLES --- */
+@layer base {
+  * {
+    /* Using var() syntax ensures properties update when .dark class is active */
+    border-color: var(--color-border);
+    outline-color: var(--color-ring);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
