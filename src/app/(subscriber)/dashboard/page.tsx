@@ -4,8 +4,18 @@ import { stripe } from "@/lib/stripe";
 import ScoreEntryForm from "@/components/forms/ScoreEntryForm";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { Calendar, CheckCircle2, CreditCard, Heart, Info, Trophy, XCircle } from "lucide-react";
+import {
+  Calendar,
+  CheckCircle2,
+  CreditCard,
+  Heart,
+  Info,
+  Trophy,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
+import CharityCard from "@/components/forms/CharityCart";
+import { formatRegionalPrice } from "@/lib/utils/currency";
 
 export default async function DashboardPage({
   searchParams,
@@ -24,7 +34,7 @@ export default async function DashboardPage({
 
   const { data: profile, error: _profileError } = await supabase
     .from("profiles")
-    .select("id, selected_charity_id, charity_percentage")
+    .select("id, selected_charity_id, charity_percentage, region_id, winnings_total")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -95,6 +105,12 @@ export default async function DashboardPage({
     .eq("id", profile.selected_charity_id)
     .maybeSingle();
 
+  // Fetch all charities info
+  const { data: allCharities } = await supabase
+    .from("charities")
+    .select("id, name, logo_url")
+    .order("name", { ascending: true });
+
   // Fetch winnings
   const { data: winnings } = await supabase
     .from("draw_winners")
@@ -103,7 +119,19 @@ export default async function DashboardPage({
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 md:py-24 space-y-10 bg-background text-foreground transition-colors duration-300">
-      {/* Subscription Status Banner (PRD Section 10: Real-time status check) */}
+
+      {/* Subscription Status Banner */}
+      <div className="bg-card border border-border rounded-3xl p-8 shadow-sm">
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+          Total Winnings
+        </p>
+        <h2 className="text-5xl font-black mt-2 text-primary">
+          {formatRegionalPrice(profile.winnings_total || 0, profile.region_id)}
+        </h2>
+        <p className="text-xs text-muted-foreground mt-4 italic">
+          Based on your {profile.region_id} competition region.
+        </p>
+      </div>
       <div
         className={`p-6 rounded-3xl border flex flex-col md:flex-row items-center justify-between gap-6 transition-all duration-500 shadow-sm ${
           subscription?.is_active
@@ -156,12 +184,14 @@ export default async function DashboardPage({
             </div>
           </div>
         ) : (
-          <Link href='/subscribe' className="w-full md:w-auto bg-destructive text-destructive-foreground px-6 py-3 rounded-xl font-bold hover:scale-105 transition-transform">
+          <Link
+            href="/subscribe"
+            className="w-full md:w-auto bg-destructive text-destructive-foreground px-6 py-3 rounded-xl font-bold hover:scale-105 transition-transform"
+          >
             Resume Membership
           </Link>
         )}
       </div>
-
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           {/* Score Entry Form (Section 05: Rolling 5 logic) */}
@@ -235,69 +265,69 @@ export default async function DashboardPage({
         </div>
 
         <div className="space-y-8">
-          {/* Charity Card (PRD Emotional branding) */}
-          <div className="bg-primary rounded-3xl p-8 text-primary-foreground shadow-xl shadow-primary/20 relative overflow-hidden group">
-            <Heart
-              className="absolute -right-4 -top-4 w-32 h-32 opacity-10 group-hover:scale-110 transition-transform duration-700"
-              fill="currentColor"
-            />
-            <h3 className="opacity-70 font-black uppercase text-[10px] tracking-[0.2em]">
-              Selected Charity
-            </h3>
-            <p className="text-3xl font-bold mt-2 leading-tight">
-              {charity?.name || "Support a Cause"}
-            </p>
-            <div className="mt-8 pt-6 border-t border-primary-foreground/20 flex justify-between items-end">
-              <div>
-                <p className="text-[10px] opacity-70 uppercase font-bold">
-                  Your Impact
-                </p>
-                <p className="text-2xl font-black">
-                  {profile?.charity_percentage || 10}%
+          {/* Charity Card */}
+          <CharityCard
+            profile={profile}
+            charity={charity}
+            allCharities={allCharities}
+          />
+
+          {/* Reward Tracker */}
+          <div className="space-y-4">
+            {!winnings || winnings?.length === 0 ? (
+              <div className="text-center py-6 border-2 border-dashed border-border rounded-2xl">
+                <p className="text-xs text-muted-foreground px-4 italic">
+                  No winnings yet. Enter your scores to qualify for the next
+                  draw!
                 </p>
               </div>
-              <button className="text-xs bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-lg font-bold transition-all">
-                Change
-              </button>
-            </div>
-          </div>
+            ) : (
+              winnings.map((win: any) => {
+                // Logic to determine the display label and color
+                const isPaid = win.payment_status === "paid";
+                const status = isPaid ? "paid" : win.verification_status;
 
-          {/* Reward Tracker (Section 10: Participation Summary) */}
-          <div className="bg-card rounded-3xl p-8 border border-border shadow-md">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-muted-foreground font-black uppercase text-[10px] tracking-widest">
-                Reward Tracker
-              </h3>
-              <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
-            </div>
-            <div className="space-y-4">
-              {!winnings || winnings?.length === 0 ? (
-                <div className="text-center py-6 border-2 border-dashed border-border rounded-2xl">
-                  <p className="text-xs text-muted-foreground px-4">
-                    Enter your first score to qualify for the next $1,000 draw!
-                  </p>
-                </div>
-              ) : (
-                winnings.map((win: any) => (
+                const statusStyles: Record<string, string> = {
+                  pending: "bg-amber-100 text-amber-700 border-amber-200",
+                  approved:
+                    "bg-emerald-100 text-emerald-700 border-emerald-200",
+                  rejected: "bg-red-100 text-red-700 border-red-200",
+                  paid: "bg-blue-100 text-blue-700 border-blue-200",
+                };
+
+                return (
                   <div
                     key={win.id}
-                    className="flex justify-between items-center bg-muted/50 p-4 rounded-2xl border border-border hover:border-primary/50 transition-colors"
+                    className="flex justify-between items-center bg-card p-4 rounded-2xl border border-border hover:border-primary/30 transition-all shadow-sm group"
                   >
                     <div>
-                      <p className="font-black text-lg text-foreground">
-                        ${win.prize_amount}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">
-                        {win.match_type}-Match Winner
+                      <div className="flex items-center gap-2">
+                        <p className="font-black text-xl text-foreground">
+                          ${Number(win.prize_amount).toLocaleString()}
+                        </p>
+                        {isPaid && (
+                          <CheckCircle2 size={14} className="text-blue-600" />
+                        )}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground uppercase font-black tracking-tight opacity-70">
+                        {win.match_type}-Number Match
                       </p>
                     </div>
-                    <span className="text-[9px] bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded-lg uppercase font-black">
-                      {win.verification_status}
-                    </span>
+
+                    <div className="text-right">
+                      <span
+                        className={`text-[9px] px-2.5 py-1 rounded-full uppercase font-black border tracking-tighter ${statusStyles[status] || statusStyles.pending}`}
+                      >
+                        {status}
+                      </span>
+                      <p className="text-[8px] text-muted-foreground mt-1 font-bold opacity-50">
+                        {new Date(win.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
-                ))
-              )}
-            </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>

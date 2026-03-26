@@ -22,6 +22,7 @@ export async function updateProfileAction(
 
   const name = formData.get("name") as string;
   const charityId = formData.get("charityId") as string;
+  const regionId = formData.get("regionId") as string;
 
   // Update both Auth metadata and the Profiles table
   const { error: authError } = await supabase.auth.updateUser({
@@ -33,6 +34,7 @@ export async function updateProfileAction(
     .update({
       full_name: name,
       selected_charity_id: charityId,
+      region_id: regionId,
     })
     .eq("id", user.id);
 
@@ -339,4 +341,34 @@ export async function forgotPasswordAction(
     message:
       "If an account exists with this email, you will receive a password reset link shortly.",
   };
+}
+
+export async function updateCharitySettings(formData: FormData) {
+  const supabase = await createClient();
+
+  // Authenticate user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const percentage = parseInt(formData.get("percentage") as string);
+  const charityId = formData.get("charityId") as string;
+
+  // Update profiles table
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      charity_percentage: percentage,
+      selected_charity_id: charityId,
+    })
+    .eq("id", user.id);
+
+  if (error) {
+    console.error("Error: ", error);
+    return { error: error.message };
+  }
+
+  revalidatePath("/dashboard");
+  return { success: true };
 }

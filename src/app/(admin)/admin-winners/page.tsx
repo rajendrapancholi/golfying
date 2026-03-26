@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import { verifyWinnerAction } from "@/app/actions/adminWinners";
+import {
+  verifyPayoutAction,
+  verifyWinnerAction,
+} from "@/app/actions/adminWinners";
 import {
   Check,
   X,
@@ -7,18 +10,34 @@ import {
   Image as ImageIcon,
   Clock,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import WinnerActionButtons from "@/components/admin/WinnerAction";
+import { formatRegionalPrice } from "@/lib/utils/currency";
 
 export default async function AdminWinnersPage() {
   const supabase = await createClient();
 
-  // Fetch Winners
-  const { data: winners } = await supabase
+  // // Fetch Winners
+  const { data: winners, error } = await supabase
     .from("draw_winners")
-    .select("*, profiles(full_name, email)")
+    .select(
+      `
+    *,
+    profiles!inner (
+      id,
+      full_name
+    )
+  `,
+    )
     .neq("verification_status", "paid")
     .order("created_at", { ascending: false });
 
-  // Pre-generate Signed URLs (Avoids async map issue)
+  if (error) {
+    console.error("Query Error:", error);
+  }
+
+  // Pre-generate Signed URLs
   const winnersWithUrls = await Promise.all(
     (winners || []).map(async (win) => {
       let signedUrl = null;
@@ -54,22 +73,22 @@ export default async function AdminWinnersPage() {
             key={win.id}
             className="bg-card border border-border rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-8 items-start hover:border-primary/20 transition-all"
           >
-            {/* Proof Preview (Modern aspect-ratio container) */}
+            {/* Proof Preview */}
             <div className="w-full md:w-56 aspect-square bg-muted rounded-2xl overflow-hidden border border-border flex items-center justify-center relative group shrink-0">
               {win.signedUrl ? (
                 <>
-                  <img
+                  <Image
                     src={win.signedUrl}
                     alt="Proof"
                     className="w-full h-full object-cover"
                   />
-                  <a
+                  <Link
                     href={win.signedUrl}
                     target="_blank"
                     className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white"
                   >
                     <ExternalLink size={24} />
-                  </a>
+                  </Link>
                 </>
               ) : (
                 <div className="text-muted-foreground flex flex-col items-center gap-2 text-center p-4">
@@ -92,13 +111,16 @@ export default async function AdminWinnersPage() {
                   <h3 className="text-2xl font-black text-foreground">
                     {win.profiles?.full_name}
                   </h3>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    {win.profiles?.email}
+                  <p className="text-[10px] font-mono text-muted-foreground opacity-50 truncate w-32">
+                    UID: {win.profiles?.id}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-3xl font-black text-primary">
-                    £{win.prize_amount}
+                    {formatRegionalPrice(
+                      Number(win.prize_amount),
+                      win.region_id || "GB",
+                    )}
                   </p>
                   <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-1">
                     {win.match_type}-Number Match
@@ -121,29 +143,12 @@ export default async function AdminWinnersPage() {
                 </span>
               </div>
 
-              {/* Action Bar (PRD: Mark payouts as completed) */}
-              <div className="pt-6 border-t border-border flex flex-wrap gap-3">
-                <form
-                  action={async () => {
-                    "use server";
-                    await verifyWinnerAction(win.id, "approved");
-                  }}
-                >
-                  <button className="bg-success text-white px-8 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-success/10 cursor-pointer">
-                    <Check size={18} strokeWidth={3} /> Approve Payout
-                  </button>
-                </form>
-
-                <form
-                  action={async () => {
-                    "use server";
-                    await verifyWinnerAction(win.id, "rejected");
-                  }}
-                >
-                  <button className="bg-destructive/10 text-destructive border border-destructive/20 px-8 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-destructive/20 transition-all cursor-pointer">
-                    <X size={18} strokeWidth={3} /> Reject Claim
-                  </button>
-                </form>
+              {/* Action Bar */}
+              <div className="pt-6 border-t border-border">
+                <WinnerActionButtons
+                  winId={win.id}
+                  status={win.verification_status}
+                />
               </div>
             </div>
           </div>

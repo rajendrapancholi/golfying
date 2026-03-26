@@ -4,6 +4,7 @@ import { registerAction } from "@/app/actions/auth";
 import { useActionState, useEffect, useState } from "react";
 import { Heart, Trophy, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 
 export default function RegisterPage() {
   const supabase = createClient();
@@ -175,8 +176,20 @@ export default function RegisterPage() {
               </>
             )}
           </button>
+          <p className="text-center text-sm text-muted-foreground mt-2 font-medium">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="text-primary font-bold hover:underline transition-colors"
+            >
+              Log in here
+            </Link>
+          </p>
         </form>
       </div>
+      <p className="mt-10 text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground/60 text-center">
+        Join the 1,500+ golfers giving back
+      </p>
     </div>
   );
 }

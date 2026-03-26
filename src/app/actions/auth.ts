@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { isValidEmail } from "@/lib/utils/email";
 import { redirect } from "next/navigation";
 
 export async function registerAction(
@@ -87,4 +88,32 @@ export async function logoutAction() {
   const supabase = await createClient();
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
+}
+
+export async function forgotPasswordAction(
+  _previousState: any,
+  formData: FormData
+) {
+  const supabase = await createClient();
+  const forgotEmail = formData.get("forgotEmail") as string;
+
+  if (!forgotEmail || forgotEmail.trim() === "") {
+    return { error: "Email address is required." };
+  }
+
+  if (!isValidEmail(forgotEmail)) {
+    return { error: "Please enter a valid email address." };
+  }
+
+  const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+    forgotEmail,
+    {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
+    }
+  );
+
+  return {
+    success: true,
+    message: "If an account exists, a reset link has been sent to your email.",
+  };
 }

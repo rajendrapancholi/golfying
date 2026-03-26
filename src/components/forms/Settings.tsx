@@ -146,6 +146,23 @@ export default function Settings({ profile, charities, subscription }: any) {
                 ))}
               </select>
             </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                Competition Region
+              </label>
+              <select
+                name="regionId"
+                defaultValue={profile?.region_id || "GB"}
+                className="w-full bg-muted border border-border rounded-2xl p-4 font-bold text-sm outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="GB">United Kingdom (£)</option>
+                <option value="US">United States ($)</option>
+                <option value="IN">India (₹)</option>
+              </select>
+              <p className="text-[10px] text-muted-foreground italic">
+                *Changing your region affects which prize draws you enter.
+              </p>
+            </div>
           </div>
 
           <button
@@ -273,47 +290,6 @@ export default function Settings({ profile, charities, subscription }: any) {
           </form>
         )}
       </div>
-      {/* <form
-        action={emailAction}
-        className="bg-card border border-border rounded-3xl p-8 shadow-sm space-y-6"
-      >
-        <div className="flex items-center gap-3">
-          <Mail className="text-info" size={20} />
-          <h3 className="font-bold text-lg text-foreground">
-            Email Address
-          </h3>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1 flex items-center gap-1.5">
-            <Mail size={12} /> New Email Address
-          </label>
-          <input
-            name="email"
-            type="email"
-            required
-            placeholder="your.new.email@example.com"
-            className="w-full bg-muted border-none p-4 rounded-xl focus:ring-2 focus:ring-info outline-none transition-all font-medium"
-          />
-          <p className="text-xs text-muted-foreground italic">
-            You'll need to confirm this change via email.
-          </p>
-        </div>
-
-        <button
-          disabled={emailPending}
-          className="w-full md:w-auto bg-info text-background px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {emailPending ? (
-            "Updating..."
-          ) : (
-            <>
-              <Mail size={18} /> Update Email
-            </>
-          )}
-        </button>
-      </form> */}
-
       {/* Password Update Section */}
       <form
         action={passwordAction}

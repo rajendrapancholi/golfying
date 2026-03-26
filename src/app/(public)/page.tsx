@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Heart, Trophy, Target, ArrowRight, Zap } from "lucide-react";
+import Image from "next/image";
 
 export default async function LandingPage() {
   return (
@@ -11,10 +12,13 @@ export default async function LandingPage() {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-bold tracking-wide animate-pulse">
               <Zap size={16} /> THE NEW ERA OF GOLF GIVING
             </div>
-            
+
             <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9]">
               PLAY FOR <span className="text-primary">PURPOSE.</span> <br />
-              WIN FOR <span className="text-muted-foreground underline decoration-primary/30">IMPACT.</span>
+              WIN FOR{" "}
+              <span className="text-muted-foreground underline decoration-primary/30">
+                IMPACT.
+              </span>
             </h1>
 
             <p className="max-w-2xl mx-auto text-xl text-muted-foreground font-medium">
@@ -40,9 +44,11 @@ export default async function LandingPage() {
           </div>
         </div>
       </section>
-
       {/* SECTION 2: MECHANICS - Using 'bg-muted' for section contrast */}
-      <section id="mechanics" className="py-24 bg-muted/50 border-y border-border">
+      <section
+        id="mechanics"
+        className="py-24 bg-muted/50 border-y border-border"
+      >
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-12">
             <div className="space-y-4 p-6 bg-card rounded-3xl border border-border shadow-sm">
@@ -51,7 +57,8 @@ export default async function LandingPage() {
               </div>
               <h3 className="text-2xl font-bold">1. Log Rounds</h3>
               <p className="text-muted-foreground">
-                Enter your last 5 Stableford scores (1-45). Our rolling engine automatically replaces the oldest round.
+                Enter your last 5 Stableford scores (1-45). Our rolling engine
+                automatically replaces the oldest round.
               </p>
             </div>
 
@@ -61,7 +68,8 @@ export default async function LandingPage() {
               </div>
               <h3 className="text-2xl font-bold">2. Fuel Charity</h3>
               <p className="text-muted-foreground">
-                10% of every subscription goes directly to your cause. You play, they win. Simple as that.
+                10% of every subscription goes directly to your cause. You play,
+                they win. Simple as that.
               </p>
             </div>
 
@@ -71,14 +79,15 @@ export default async function LandingPage() {
               </div>
               <h3 className="text-2xl font-bold">3. Win the Pool</h3>
               <p className="text-muted-foreground">
-                Matched numbers win the 40/35/25 prize pool. No 5-match winner? The Jackpot rolls over to next month.
+                Matched numbers win the 40/35/25 prize pool. No 5-match winner?
+                The Jackpot rolls over to next month.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FEATURED CHARITIES - Requirement 08 Integration */}
+      {/* FEATURED CHARITIES */}
       <section className="py-24 bg-background">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-4xl font-black mb-12 tracking-tight">
@@ -86,20 +95,39 @@ export default async function LandingPage() {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              "Ocean Cleanup",
-              "Cancer Research",
-              "Trees for Future",
-              "Clean Water",
-            ].map((name) => (
-              <div
-                key={name}
-                className="p-8 border-2 border-border bg-card rounded-3xl hover:border-primary/50 hover:-translate-y-1 transition-all cursor-pointer group"
+              { name: "Ocean Cleanup", logo: "/ocean-cleanup.jpg" },
+              { name: "Cancer Research", logo: "/cancer-research.jpeg" }, // Added missing /
+              { name: "Trees for Future", logo: "/trees-for-future.jpeg" },
+              { name: "Clean Water", logo: "/clean-water.jpeg" },
+            ].map((charity) => (
+              <Link
+                key={charity.name}
+                href="/charities"
+                className="p-8 border-2 border-border bg-card rounded-3xl hover:border-primary/50 hover:-translate-y-1 transition-all cursor-pointer group flex flex-col items-center justify-center"
               >
-                <div className="w-16 h-16 bg-muted rounded-full mx-auto mb-4 group-hover:scale-110 transition-transform" />
-                <p className="font-bold text-foreground">{name}</p>
-              </div>
+                {/* 1. Added rounded-full and overflow-hidden here */}
+                <div className="relative w-16 h-16 mb-4 group-hover:scale-110 transition-transform rounded-full overflow-hidden bg-muted">
+                  {charity.logo ? (
+                    <Image
+                      src={charity.logo}
+                      alt={charity.name}
+                      fill
+                      unoptimized
+                      sizes="64px"
+                      /* 2. Added rounded-full to the image as well for safety */
+                      className="object-cover rounded-full filter grayscale group-hover:grayscale-0 transition-all duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Heart className="text-muted-foreground/40" size={24} />
+                    </div>
+                  )}
+                </div>
+                <p className="font-bold text-foreground">{charity.name}</p>
+              </Link>
             ))}
           </div>
+
           <Link
             href="/charities"
             className="inline-flex items-center gap-2 mt-12 text-primary font-bold hover:gap-4 transition-all"
