@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import Navbar from "@/components/ui/Navbar";
-import Footer from "@/components/ui/Footer";
+import Navbar from "@/components/shared/Navbar";
+import Footer from "@/components/shared/Footer";
 
 export default async function DashboardLayout({
   children,
@@ -16,23 +16,25 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const [profileRes, subRes] = await Promise.all([
+    supabase.from("profiles").select("role").eq("id", user?.id).maybeSingle(),
+    supabase
+      .from("subscriptions")
+      .select("is_active")
+      .eq("user_id", user?.id)
+      .maybeSingle(),
+  ]);
 
-  console.log("Debug subscription: ", subscription);
-
+  const userWithRole = user ? { ...user, userRole: profileRes.data?.role } : null;
   return (
     <>
-      <Navbar user={user} subscription={subscription}/>
+      <Navbar user={userWithRole} subscription={subRes.data} />
       <div className="min-h-screen bg-background flex flex-col justify-center items-center">
         <main className="flex-1 container px-6 py-8">
           <div className="grid gap-6">{children}</div>
         </main>
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 }

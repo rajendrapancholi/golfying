@@ -17,8 +17,8 @@ import LogoutButton from "../auth/LogoutButton";
 import { ThemeToggle } from "./ThemeToggle";
 
 interface NavbarProps {
-  user: User | null;
-  subscription?: { is_active: boolean } | null; // Pass this from layout
+  user: (User & { userRole?: string }) | null;
+  subscription?: { is_active: boolean } | null;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ user, subscription }) => {
@@ -26,7 +26,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, subscription }) => {
   const pathname = usePathname();
 
   const isActive = (path: string) => pathname === path;
+console.log('Debug Auth Role: ', user?.role); 
 
+// This shows 'admin' or 'subscriber' (Your Profile Table)
+console.log('Debug Custom Role: ', user?.userRole); 
   return (
     <>
       {dropdown && (
@@ -153,7 +156,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, subscription }) => {
 
                       <div className="px-2 space-y-1">
                         <DropdownLink
-                          href="/dashboard"
+                          href={user.userRole==='admin'?'/admin-dashboard': '/dashboard'}
                           icon={<LayoutDashboard size={16} />}
                           label="Dashboard"
                         />

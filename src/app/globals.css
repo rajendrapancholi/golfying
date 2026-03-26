@@ -67,3 +67,23 @@
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
+
+@utility flex-center {
+  @apply flex justify-center items-center;
+}
+
+@utility flex-left {
+  @apply flex justify-start items-center;
+}
+
+@utility flex-right {
+  @apply flex justify-end items-center;
+}
+
+@utility flex-between {
+  @apply flex justify-between items-center;
+}
+
+@utility flex-col-center {
+  @apply flex flex-col justify-center items-center;
+}

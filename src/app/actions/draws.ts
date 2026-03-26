@@ -1,90 +1,85 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { revalidatePath } from "next/cache";
 
-/**
- * Run the monthly draw
- */
-export async function runMonthlyDrawAction() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || user.role !== "admin") redirect("/dashboard");
+export async function executeMonthlyDraw(
+  _previousState:
+    | { error: string; success?: undefined }
+    | { success: boolean; error?: undefined }
+    | null,
+  formData: FormData,
+) {
+  const supabase = await createAdminClient();
+  const logic = formData.get("logic") as string; // 'random' or 'algorithm'
+  const isSimulation = formData.get("isSimulation") === "true";
 
-  // Create a new draw record for this month
-  const drawMonth = new Date().toISOString().slice(0, 7) + "-01"; // e.g., '2026-03-01'
+  // Generate 6 Unique Random Numbers (1-59)
+  let winningNumbers: number[] = [];
+  if (logic === "algorithm") {
+    while (winningNumbers.length < 6) {
+      const num = Math.floor(Math.random() * 59) + 1;
+      if (!winningNumbers.includes(num)) winningNumbers.push(num);
+    }
+  } else {
+    // Pure Random Logic
+    winningNumbers = Array.from(
+      { length: 6 },
+      () => Math.floor(Math.random() * 59) + 1,
+    );
+  }
+  winningNumbers.sort((a, b) => a - b);
 
-  // Calculate total prize pool from subscriptions
-  const { data: subs, error: subErr } = await supabase
-    .from("subscriptions")
-    .select("id, amount, is_active")
-    .eq("is_active", true);
-
-  if (subErr) throw new Error(subErr.message);
-
-  const totalPrizePool = subs?.reduce((sum, s) => sum + Number(s.amount) * 0.4, 0) || 0;
-
-  const winningNumbers = Array.from({ length: 5 }, () => Math.floor(Math.random() * 45) + 1);
-
-  const { data: draw } = await supabase
+  // Insert the record
+  const { data: draw, error: drawError } = await supabase
     .from("draws")
     .insert({
-      draw_month: drawMonth,
-      winningNumbers,
-      total_prize_pool: totalPrizePool,
-      status: "simulated"
+      winning_numbers: winningNumbers,
+      status: "pending",
     })
-    .select("*")
+    .select()
     .single();
 
-  if (!draw) throw new Error("Failed to create draw");
-
-  // Fetch latest user scores (5 scores max per user)
-  const { data: scores } = await supabase
-    .from("scores")
-    .select("user_id, score")
-    .order("score_date", { ascending: false });
-
-  if (!scores) return;
-
-  // Calculate match count for each user
-  const userScoresMap = new Map<string, number[]>();
-  for (const s of scores) {
-    if (!userScoresMap.has(s.user_id)) userScoresMap.set(s.user_id, []);
-    const arr = userScoresMap.get(s.user_id)!;
-    if (arr.length < 5) arr.push(s.score);
+  if (drawError) {
+    console.error("Error: ", drawError);
+    return { error: "Failed to initialize draw." };
   }
 
+  const { data: eligibleScores } = await supabase
+    .from("scores")
+    .select("*, profiles!inner(id, subscription_status)")
+    .eq("profiles.subscription_status", "active");
+
   const winners: any[] = [];
-
-  userScoresMap.forEach((numbers, userId) => {
-    let matchCount = numbers.filter(n => draw.winning_numbers.includes(n)).length;
-    if (matchCount >= 3) {
-      // Determine prize tier
-      let prizeAmount = 0;
-      if (matchCount === 5) prizeAmount = totalPrizePool * 0.4;
-      else if (matchCount === 4) prizeAmount = totalPrizePool * 0.35;
-      else if (matchCount === 3) prizeAmount = totalPrizePool * 0.25;
-
+  eligibleScores?.forEach((score) => {
+    // Check if the user's Stableford score (1-45) matches any winning number
+    if (winningNumbers.includes(score.score_value)) {
       winners.push({
         draw_id: draw.id,
-        user_id: userId,
-        match_type: matchCount,
-        prize_amount: prizeAmount,
-        verification_status: "pending"
+        user_id: score.user_id,
+        score_id: score.id,
+        prize_amount: 1000, // Example fixed prize; can be dynamic
+        verification_status: "pending",
       });
     }
   });
 
-  // Insert winners
+  // Record Winners & Update Draw Status
   if (winners.length > 0) {
     await supabase.from("draw_winners").insert(winners);
-  } else {
-    // If no 5-match winner, set jackpot rollover flag
-    if (totalPrizePool * 0.4 > 0) {
-      await supabase.from("draws").update({ is_jackpot_rolled_over: true }).eq("id", draw.id);
-    }
   }
 
-  redirect("/admin/draws");
+  await supabase
+    .from("draws")
+    .update({ status: "completed" })
+    .eq("id", draw.id);
+
+  revalidatePath("/admin/draws");
+  return {
+    success: true,
+    winningNumbers: winningNumbers,
+    potentialWinners: winners || [],
+    winnerCount: winners.length,
+    isSimulation: isSimulation,
+  };
 }

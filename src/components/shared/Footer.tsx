@@ -108,7 +108,7 @@ export default function Footer() {
         {/* Bottom Bar (PRD Compliance) */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-            © 2026 GOLFYING · POWERED BY DIGITAL HEROES
+            &copy; {new Date().getFullYear()} GOLFYING · POWERED BY GOLFYING
           </p>
           <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest">
             <Heart size={12} className="fill-current" />

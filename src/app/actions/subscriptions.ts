@@ -30,6 +30,7 @@ export async function createCheckoutSession(plan: "monthly" | "yearly") {
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
     metadata: {
       user_id: user.id,
+      plan
     },
   });
 

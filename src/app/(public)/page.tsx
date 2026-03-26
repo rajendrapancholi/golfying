@@ -20,7 +20,7 @@ export default async function LandingPage() {
             <p className="max-w-2xl mx-auto text-xl text-muted-foreground font-medium">
               The premium subscription platform where your golf performance
               fuels global change. Log scores, support charities, and enter
-              monthly £10,000+ prize draws.
+              monthly $10,000+ prize draws.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">

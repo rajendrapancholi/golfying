@@ -32,36 +32,39 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
   const pathname = request.nextUrl.pathname;
 
-  // Basic Auth Protection (Dashboard & Admin)
-  if (
-    !user &&
-    (pathname.startsWith("/dashboard") || pathname.startsWith("/admin"))
-  ) {
+  // Unified Protected Route Check
+  const isProtected =
+    pathname.startsWith("/dashboard") || pathname.startsWith("/admin") ||  pathname === "/admin-dashboard";;
+
+  if (!user && isProtected) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   // Role & Subscription Checks (Only if logged in)
-  if (user) {
+  if (user && isProtected) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role, subscription_status")
       .eq("id", user.id)
       .single();
 
-    // Admin Protection: Only 'admin' role can enter /admin
+      // Admin Protection: Only 'admin' role can enter /admin
     if (pathname.startsWith("/admin") && profile?.role !== "admin") {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
-    // Subscription Protection: Restricted features require 'active' status
-    // PRD: "Non-subscribers receive restricted access"
-    const restrictedFeatures = ["/dashboard/scores", "/dashboard/draws"];
-    if (
-      restrictedFeatures.some((p) => pathname.startsWith(p)) &&
-      profile?.subscription_status !== "active"
-    ) {
+    if (profile?.role === "admin" && pathname === "/dashboard") {
+      return NextResponse.redirect(new URL("/admin-dashboard", request.url));
+    }
+    // Subscriber Feature Locking
+    // Ensure "Free" users can't access score entry or draws
+    const restrictedPaths = ["/dashboard/scores", "/dashboard/draws"];
+    const isRestricted = restrictedPaths.some((p) => pathname.startsWith(p));
+
+    if (isRestricted && profile?.subscription_status !== "active") {
+      // Redirect to subscription page with a trigger for the PlanPicker
       return NextResponse.redirect(
-        new URL("/dashboard?error=subscription_required", request.url),
+        new URL("/subscribe?reason=upgrade", request.url),
       );
     }
   }

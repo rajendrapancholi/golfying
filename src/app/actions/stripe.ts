@@ -28,3 +28,29 @@ export async function createCheckout(plan: "monthly" | "yearly") {
 
   redirect(session.url!);
 }
+
+export async function createCheckoutSession(priceId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  // Create or retrieve Stripe Customer ID linked to this user
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("stripe_customer_id")
+    .eq("id", user.id)
+    .single();
+
+  const session = await stripe.checkout.sessions.create({
+    customer: profile?.stripe_customer_id,
+    mode: "subscription",
+    payment_method_types: ["card"],
+    line_items: [{ price: priceId, quantity: 1 }],
+    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?success=true`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/subscribe?canceled=true`,
+    metadata: { userId: user.id }, // Critical for the webhook
+  });
+
+  if (session.url) redirect(session.url);
+}

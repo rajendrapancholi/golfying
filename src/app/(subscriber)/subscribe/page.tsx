@@ -34,14 +34,14 @@ export default function SubscribePage() {
               Monthly Champion
             </h2>
             <div className="my-6 flex items-baseline">
-              <span className="text-5xl font-black text-foreground">£15</span>
+              <span className="text-5xl font-black text-foreground">$15</span>
               <span className="text-muted-foreground ml-2">/ month</span>
             </div>
 
             <div className="space-y-4 mb-10 flex-1">
               <FeatureItem text="Unlimited Rolling 5 Tracking" />
               <FeatureItem text="1 Entry to Monthly Prize Draw" />
-              <FeatureItem text="£1.50 Guaranteed to Charity" />
+              <FeatureItem text="$1.50 Guaranteed to Charity" />
             </div>
 
             <form action={monthlyAction}>
@@ -61,13 +61,13 @@ export default function SubscribePage() {
             </div>
             <h2 className="text-2xl font-bold text-white">Yearly Hero</h2>
             <div className="my-6 flex items-baseline">
-              <span className="text-5xl font-black text-white">£150</span>
+              <span className="text-5xl font-black text-white">$150</span>
               <span className="text-slate-400 ml-2">/ year</span>
             </div>
 
             <div className="space-y-4 mb-10 flex-1 text-slate-300">
-              <FeatureItem text="2 Months Free (Save £30)" isYearly />
-              <FeatureItem text="£15 Guaranteed to Charity" isYearly />
+              <FeatureItem text="2 Months Free (Save $30)" isYearly />
+              <FeatureItem text="$15 Guaranteed to Charity" isYearly />
               <FeatureItem text="Priority Winner Verification" isYearly />
               <FeatureItem text="Featured Supporter Status" isYearly />
             </div>
