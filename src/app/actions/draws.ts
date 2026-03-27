@@ -35,7 +35,6 @@ export async function executeMonthlyDraw(
   winningNumbers.sort((a, b) => a - b);
 
   const DEBUG_USER_ID = process.env.DEBUG_USER_ID;
-   "0c8cb32f-90e6-44de-b039-39189842e8b9";
 
   if (process.env.DEBUG_MODE === "enable") {
     const { data: testUserScores } = await supabase

@@ -1,11 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import {
-  verifyPayoutAction,
-  verifyWinnerAction,
-} from "@/app/actions/adminWinners";
-import {
-  Check,
-  X,
   ExternalLink,
   Image as ImageIcon,
   Clock,

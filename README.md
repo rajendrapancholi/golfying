@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://golfying.com">
+  <a href="https://golfying.vercel.app/">
     <img src="public/app-logo512x512-4.png" alt="golfying" width="120px">
   </a>
   <br>
@@ -74,12 +74,11 @@ At its core, Golfying blends performance, competition, and social impact into on
 - Next.js (App Router)
 - TypeScript
 - Tailwind CSS
-- Framer Motion
 - TanStack Query (optional)
 - Axios or Fetch for API communication
 
 ### Backend
-- Next.js API Routes or Node.js + Express
+- Next.js Server actions
 - PostgreSQL (Supabase)
 - Stripe (Subscription billing)
 - Supabase Storage (winner proof uploads)
@@ -164,17 +163,45 @@ Visit `http://localhost:3000`.
 Add your real screenshots later. Placeholder examples:
 
 ### Home Page
-
 ![Home](screenshots/homepage.png)
 
-### Player Dashboard
+### Register
+![Register](screenshots/register.png)
 
-![Dashboard](screenshots/dashboard.png)
+### Login
+![Login](screenshots/login.png)
 
-### Admin Panel
+### Player Dashboard – Overview
+![Dashboard 1](screenshots/dash1.png)
 
-![Admin Panel](screenshots/admin.png)
+### Player Dashboard – Details
+![Dashboard 2](screenshots/dash2.png)
 
+### Player Charity Page
+![Charity](screenshots/charity.png)
+
+### Player Winnings
+![Winnings](screenshots/winnings.png)
+
+---
+
+### Admin Dashboard – Overview
+![Admin Dashboard 1](screenshots/admdash1.png)
+
+### Admin Dashboard – Analytics
+![Admin Dashboard 2](screenshots/admdash2.png)
+
+### Admin Charity Management
+![Admin Charity](screenshots/admcharity.png)
+
+### Admin Draws Management
+![Admin Draws](screenshots/admdraws.png)
+
+### Admin Verification
+![Admin Verify](screenshots/admverify.png)
+
+### Admin Settings
+![Settings](screenshots/settings.png)
 ---
 
 ## Contributing
