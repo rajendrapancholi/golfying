@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: { headers: request.headers },
   });
@@ -34,7 +34,9 @@ export async function middleware(request: NextRequest) {
 
   // Unified Protected Route Check
   const isProtected =
-    pathname.startsWith("/dashboard") || pathname.startsWith("/admin") ||  pathname === "/admin-dashboard";;
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/admin") ||
+    pathname === "/admin-dashboard";
 
   if (!user && isProtected) {
     return NextResponse.redirect(new URL("/login", request.url));
@@ -48,7 +50,7 @@ export async function middleware(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-      // Admin Protection: Only 'admin' role can enter /admin
+    // Admin Protection: Only 'admin' role can enter /admin
     if (pathname.startsWith("/admin") && profile?.role !== "admin") {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
