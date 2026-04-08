@@ -15,7 +15,7 @@ export default async function SettingsPage() {
   const { data: profile, error: _profileError } = await supabase
     .from("profiles")
     .select(
-      "id, role, selected_charity_id, subscription_status, subscription_tier",
+      "id, role, region_id, selected_charity_id, subscription_status, subscription_tier",
     )
     .eq("id", user.id)
     .maybeSingle();
